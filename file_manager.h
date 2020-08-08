@@ -5,6 +5,7 @@
 #define _FILE_MANAGER_H_
 
 #include "user_interface.h"
+#include <unistd.h>
 
 typedef struct file_manager_data {
     user_interface ui;

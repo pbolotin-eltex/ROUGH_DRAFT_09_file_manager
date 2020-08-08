@@ -6,6 +6,8 @@
 
 #include <curses.h>
 #include <panel.h>
+#include <malloc.h>
+#include <stdlib.h>
 
 typedef struct user_interface {
     WINDOW* main_wnd;
