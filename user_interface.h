@@ -14,10 +14,28 @@ typedef struct user_interface {
     WINDOW* l_wnd;
     WINDOW* r_wnd;
     WINDOW* message;
-    WINDOW* string;
+    WINDOW* cmd;
+    int l_wnd_active_flag;
+    int r_wnd_active_flag;
 } user_interface;
 
+int user_interface_what_user_did(user_interface* ui);
+
 int user_interface_init(user_interface* ui);
+
+int user_interface_change_active_panel(user_interface* ui);
+
+int user_interface_show_lpanel(user_interface* ui);
+int user_interface_show_rpanel(user_interface* ui);
+int user_interface_show_cmd(user_interface* ui);
+int user_interface_show_message(user_interface* ui);
+int user_interface_show_mainwnd(user_interface* ui);
+
+int user_interface_show_on_screen(user_interface* ui);
+
+int user_interface_number_to_cmd(user_interface* ui, int number);
+
+int user_interface_string_to_cmd(user_interface* ui, char* str);
 
 int user_interface_final(user_interface* ui);
 

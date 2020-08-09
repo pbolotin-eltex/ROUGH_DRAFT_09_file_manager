@@ -34,12 +34,14 @@ int user_interface_init(user_interface* ui) {
     wbkgd(ui->l_wnd, COLOR_PAIR(2));
     box(ui->l_wnd, 0, 0);
     mvwaddstr(ui->l_wnd, 0,3, "left wnd");
+    ui->l_wnd_active_flag = 0;
     
     /* Init right window */
     ui->r_wnd = newwin(main_y-3, main_x/2, 0, main_x/2);
-    wbkgd(ui->r_wnd, COLOR_PAIR(2));
+    wbkgd(ui->r_wnd, A_BOLD|COLOR_PAIR(2));
     box(ui->r_wnd, 0, 0);
     mvwaddstr(ui->r_wnd, 0,3, "right wnd");
+    ui->r_wnd_active_flag = 1;
     
     /* Init message window */
     
@@ -62,18 +64,83 @@ int user_interface_init(user_interface* ui) {
     mvwaddstr(ui->message, 0, 3, "message");
     
     /* Init command line window */
-    ui->string = newwin(3, main_x, main_y - 3, 0);
-    wbkgd(ui->string, COLOR_PAIR(1));
-    box(ui->string, 0, 0);
-    mvwaddstr(ui->string, 0,3, "command line");
+    ui->cmd = newwin(3, main_x, main_y - 3, 0);
+    wbkgd(ui->cmd, COLOR_PAIR(1));
+    box(ui->cmd, 0, 0);
+    mvwaddstr(ui->cmd, 0,3, "command line");
     
-    /* Temporary show */
+    /* Temporary show for the testing purpose */
+    /*
     wnoutrefresh(ui->main_wnd);
     wnoutrefresh(ui->l_wnd);
     wnoutrefresh(ui->r_wnd);
     wnoutrefresh(ui->message);
-    wnoutrefresh(ui->string);
+    wnoutrefresh(ui->cmd);
     doupdate();
+    */
+    return 0;
+}
+
+int user_interface_what_user_did(user_interface* ui) {
+    return wgetch(ui->main_wnd);
+}
+
+int user_interface_change_active_panel(user_interface* ui) {
+    if(1 == ui->l_wnd_active_flag) {
+        user_interface_string_to_cmd(ui, "change to r");
+        ui->l_wnd_active_flag = 0;
+        wbkgd(ui->l_wnd, COLOR_PAIR(2));
+        ui->r_wnd_active_flag = 1;
+        wbkgd(ui->r_wnd, A_BOLD|COLOR_PAIR(2));
+    } else {
+        user_interface_string_to_cmd(ui, "change to l");
+        ui->l_wnd_active_flag = 1;
+        wbkgd(ui->l_wnd, A_BOLD|COLOR_PAIR(2));
+        ui->r_wnd_active_flag = 0;
+        wbkgd(ui->r_wnd, COLOR_PAIR(2));
+    }
+    return 0;
+}
+
+int user_interface_show_lpanel(user_interface* ui) {
+    wnoutrefresh(ui->l_wnd);
+    return 0;
+}
+
+int user_interface_show_rpanel(user_interface* ui) {
+    wnoutrefresh(ui->r_wnd);
+    return 0;
+}
+
+int user_interface_show_message(user_interface* ui) {
+    wnoutrefresh(ui->message);
+    return 0;
+}
+
+int user_interface_show_cmd(user_interface* ui) {
+    wnoutrefresh(ui->cmd);
+    return 0;
+}
+
+int user_interface_show_mainwnd(user_interface* ui) {
+    wnoutrefresh(ui->main_wnd);
+    return 0;
+}
+
+int user_interface_show_on_screen(user_interface* ui) {
+    doupdate();
+    return 0;
+}
+
+int user_interface_number_to_cmd(user_interface* ui, int number) {
+    wmove(ui->cmd, 1,1);
+    wprintw(ui->cmd, "%d", number);
+    return 0;
+}
+
+int user_interface_string_to_cmd(user_interface* ui, char *str) {
+    wmove(ui->cmd, 1,1);
+    wprintw(ui->cmd, "%s", str);
     return 0;
 }
 
