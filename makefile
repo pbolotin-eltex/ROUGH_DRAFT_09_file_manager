@@ -4,7 +4,7 @@
 KEYS :=
 TMP  :=
 TMPL :=
-LIBS := -lncurses_g -lpanel_g
+LIBS := -lpanel_g -lncurses_g
 CC := gcc
 
 file_manager : main.o file_manager.o user_interface.o

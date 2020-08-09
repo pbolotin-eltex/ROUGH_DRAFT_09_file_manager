@@ -11,6 +11,7 @@
 #define CHANGE_ACTIVE_PANEL '\t'
 #define QUIT KEY_F(10)
 #define CHANGE_SCREEN_SIZE KEY_RESIZE
+#define TEST_SHOW_MESSAGE KEY_F(1)
 
 typedef struct file_manager_data {
     user_interface ui;

@@ -21,8 +21,12 @@ int file_manager_work(file_manager_data* data) {
         switch(what_user_did) {
             case CHANGE_SCREEN_SIZE:
                 user_interface_change_screen_size(&data->ui);
+                break;
             case CHANGE_ACTIVE_PANEL:
                 user_interface_change_active_panel(&data->ui);
+                break;
+            case TEST_SHOW_MESSAGE:
+                user_interface_need_show_message(&data->ui);
                 break;
             case QUIT:
                 end_work_flag = 1;
@@ -32,6 +36,7 @@ int file_manager_work(file_manager_data* data) {
         user_interface_show_rpanel(&data->ui);
         user_interface_show_cmd(&data->ui);
         user_interface_number_to_cmd(&data->ui, what_user_did);
+        user_interface_show_message(&data->ui);
         user_interface_show_on_screen(&data->ui);
     }
     return 0;
