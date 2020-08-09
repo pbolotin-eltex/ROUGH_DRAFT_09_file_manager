@@ -10,6 +10,7 @@
 /* What can do user */
 #define CHANGE_ACTIVE_PANEL '\t'
 #define QUIT KEY_F(10)
+#define CHANGE_SCREEN_SIZE KEY_RESIZE
 
 typedef struct file_manager_data {
     user_interface ui;

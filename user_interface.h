@@ -23,6 +23,8 @@ int user_interface_what_user_did(user_interface* ui);
 
 int user_interface_init(user_interface* ui);
 
+int user_interface_change_screen_size(user_interface* ui);
+
 int user_interface_change_active_panel(user_interface* ui);
 
 int user_interface_show_lpanel(user_interface* ui);
