@@ -12,6 +12,7 @@
 #define QUIT KEY_F(10)
 #define CHANGE_SCREEN_SIZE KEY_RESIZE
 #define TEST_SHOW_MESSAGE KEY_F(1)
+#define ON_OFF_NCURSES KEY_F(2)
 
 typedef struct file_manager_data {
     user_interface ui;

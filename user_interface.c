@@ -28,7 +28,7 @@ int user_interface_init(user_interface* ui) {
     wbkgd(ui->main_wnd, COLOR_PAIR(1));
     box(ui->main_wnd, 0, 0);
     mvwaddstr(ui->main_wnd, 0,3, "main wnd");
-    //ui->main_panel = new_panel(ui->main_wnd);
+    ui->main_panel = new_panel(ui->main_wnd);
     
     /* Init left window */
     ui->l_wnd = newwin(main_y-3, main_x/2, 0, 0);
@@ -76,15 +76,8 @@ int user_interface_init(user_interface* ui) {
     mvwaddstr(ui->cmd, 0,3, "command line");
     ui->cmd_panel = new_panel(ui->cmd);
     
-    /* Temporary show for the testing purpose */
-    /*
-    wnoutrefresh(ui->main_wnd);
-    wnoutrefresh(ui->l_wnd);
-    wnoutrefresh(ui->r_wnd);
-    wnoutrefresh(ui->message);
-    wnoutrefresh(ui->cmd);
-    doupdate();
-    */
+    /* Set flag ON */
+    ui->on_off_flag = 1;
     return 0;
 }
 
@@ -99,7 +92,7 @@ int user_interface_change_screen_size(user_interface* ui) {
     getmaxyx(ui->main_wnd, main_y, main_x);
     box(ui->main_wnd, 0, 0);
     mvwaddstr(ui->main_wnd, 0,3, "main wnd");
-    //ui->main_panel = new_panel(ui->main_wnd);
+    ui->main_panel = new_panel(ui->main_wnd);
     
     /* New left wnd parameters */
     del_panel(ui->l_panel);
@@ -151,14 +144,6 @@ int user_interface_change_screen_size(user_interface* ui) {
     box(ui->cmd, 0, 0);
     mvwaddstr(ui->cmd, 0,3, "command line");
     ui->cmd_panel = new_panel(ui->cmd);
-    
-    //wnoutrefresh(ui->main_wnd);
-    //wnoutrefresh(ui->l_wnd);
-    //wnoutrefresh(ui->r_wnd);
-    if(ui->show_message_flag) {
-        //wnoutrefresh(ui->message);
-    }
-    //wnoutrefresh(ui->cmd);
     return 0;
 }
 
@@ -196,16 +181,6 @@ int user_interface_reactivate_panels(user_interface* ui) {
     return 0;
 }
 
-int user_interface_show_lpanel(user_interface* ui) {
-    //wnoutrefresh(ui->l_wnd);
-    return 0;
-}
-
-int user_interface_show_rpanel(user_interface* ui) {
-    //wnoutrefresh(ui->r_wnd);
-    return 0;
-}
-
 int user_interface_need_show_message(user_interface* ui) {
     ui->show_message_flag = 1;
     return 0;
@@ -213,10 +188,6 @@ int user_interface_need_show_message(user_interface* ui) {
 
 int user_interface_show_message(user_interface* ui) {
     if(ui->show_message_flag) {
-        //wbkgd(ui->message, COLOR_PAIR(3));
-        //box(ui->message, 0, 0);
-        //mvwaddstr(ui->message, 0, 3, "message");
-        //wnoutrefresh(ui->message);
         user_interface_deactivate_panels(ui);
         show_panel(ui->message_panel);
         ui->show_message_flag = 0;
@@ -224,16 +195,6 @@ int user_interface_show_message(user_interface* ui) {
         user_interface_reactivate_panels(ui);
         hide_panel(ui->message_panel);
     }
-    return 0;
-}
-
-int user_interface_show_cmd(user_interface* ui) {
-    //wnoutrefresh(ui->cmd);
-    return 0;
-}
-
-int user_interface_show_mainwnd(user_interface* ui) {
-    //wnoutrefresh(ui->main_wnd);
     return 0;
 }
 
@@ -246,23 +207,21 @@ int user_interface_show_on_screen(user_interface* ui) {
 int user_interface_number_to_cmd(user_interface* ui, int number) {
     wmove(ui->cmd, 1,1);
     wprintw(ui->cmd, "%d", number);
-    //wnoutrefresh(ui->cmd);
     return 0;
 }
 
 int user_interface_string_to_cmd(user_interface* ui, char *str) {
     wmove(ui->cmd, 1,1);
     wprintw(ui->cmd, "%s", str);
-    //wnoutrefresh(ui->cmd);
     return 0;
 }
 
 int user_interface_final(user_interface* ui) {
-    //del_panel(ui->main_panel);
     del_panel(ui->r_panel);
     del_panel(ui->l_panel);
     del_panel(ui->message_panel);
     del_panel(ui->cmd_panel);
+    del_panel(ui->main_panel);
     endwin();
 #ifdef DEBUG
     exit_curses(0);
@@ -270,10 +229,33 @@ int user_interface_final(user_interface* ui) {
     return 0;
 }
 
+int user_interface_stop(user_interface* ui) {
+    del_panel(ui->r_panel);
+    del_panel(ui->l_panel);
+    del_panel(ui->message_panel);
+    del_panel(ui->cmd_panel);
+    del_panel(ui->main_panel);
+    endwin();
+    return 0;
+}
+
+int user_interface_on_off_switcher(user_interface* ui) {
+    if(1 == ui->on_off_flag) {
+        user_interface_off(ui);
+    } else {
+        user_interface_on(ui);
+    }
+    return 0;
+}
+
 int user_interface_on(user_interface* ui) {
+    user_interface_init(ui);
+    ui->on_off_flag = 1;
     return 0;
 }
 
 int user_interface_off(user_interface* ui) {
+    user_interface_stop(ui);
+    ui->on_off_flag = 0;
     return 0;
 }

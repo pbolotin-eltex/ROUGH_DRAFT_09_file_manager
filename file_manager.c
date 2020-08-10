@@ -28,13 +28,15 @@ int file_manager_work(file_manager_data* data) {
             case TEST_SHOW_MESSAGE:
                 user_interface_need_show_message(&data->ui);
                 break;
+            case ON_OFF_NCURSES:
+                user_interface_on_off_switcher(&data->ui);
+                sleep(5);
+                user_interface_on_off_switcher(&data->ui);
+                break;                
             case QUIT:
                 end_work_flag = 1;
                 break;
         }
-        user_interface_show_lpanel(&data->ui);
-        user_interface_show_rpanel(&data->ui);
-        user_interface_show_cmd(&data->ui);
         user_interface_number_to_cmd(&data->ui, what_user_did);
         user_interface_show_message(&data->ui);
         user_interface_show_on_screen(&data->ui);
