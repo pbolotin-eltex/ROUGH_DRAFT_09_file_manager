@@ -5,6 +5,7 @@ Simple two panel file manager ~ nightmare commander
 ## compilation
 
 make
+
 make debug (only if you have debug static versions of ncurses, panel, menu libs)
 
 ## usage
@@ -18,4 +19,5 @@ because of ncurses will be corrupted if stderr won't be redirected
 ## KNOWN BUGS
 
 many memory leaks
+
 no correct finalization of ncurses
