@@ -65,7 +65,6 @@ int file_manager_work(file_manager_data* data) {
                 if(user_interface_is_left_panel_active(&data->ui)) {
                     int pos;
                     pos = user_interface_active_menu_get_cursor_position(&data->ui);
-                    fprintf(stderr, "menu pos: %d\n", pos);
                     if(panel_data_check_if_entry_by_pos_is_dir(&data->l_panel_data, pos)) {
                         int ret = panel_data_try_change_dir_to_entry_by_pos(&data->l_panel_data, pos);
                         if(ret != 0) {

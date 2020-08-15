@@ -338,11 +338,10 @@ int user_interface_final(user_interface* ui) {
     free(ui->r_menu_names);
     ui->r_menu_names = NULL;
     
-    free(ui->l_menu_content);
-    ui->l_menu_names = NULL;
-    free(ui->r_menu_content);
-    ui->r_menu_names = NULL;
+    ui->l_menu_content = NULL;
+    ui->r_menu_content = NULL;
 
+    endwin();
 /* Finalize if debug library was used */
 #ifdef DEBUG    
     exit_curses(0);
@@ -425,6 +424,7 @@ int user_interface_l_menu_prepare_replace(user_interface* ui) {
         for(i = 0; i < ui->l_menu_names->unk_entr_count; all++, i++) {
             free(ui->l_menu_names->unk_entr[i]);
         }
+        ui->l_menu_names->need_to_free_strings_flag = 0;
     }
     /* Free memory of malloc's allocations */
     if(ui->l_menu_names->need_to_free_arrays_flag) {
@@ -437,11 +437,13 @@ int user_interface_l_menu_prepare_replace(user_interface* ui) {
         free(ui->l_menu_names->chr);
         free(ui->l_menu_names->unk_dirs);
         free(ui->l_menu_names->unk_entr);
+        ui->l_menu_names->need_to_free_arrays_flag = 0;
     }
     /* Free memory of cwd by strdup's allocation */
     if(ui->l_menu_names->need_to_free_cwd_flag) {
         free(ui->l_menu_names->cwd);
         ui->l_menu_names->cwd = NULL;
+        ui->l_menu_names->need_to_free_cwd_flag = 0;
     }
     return 0;
 }
@@ -458,12 +460,12 @@ int user_interface_l_menu_post(user_interface* ui) {
                             ui->l_menu_names->unk_entr_count;
     ui->l_menu_size = how_many_elements;
     /* Place for (ITEM*) array */
-    ui->l_menu_content = (ITEM**)calloc(1, sizeof(ITEM*)*(how_many_elements + 1));
+    ui->l_menu_content = (ITEM**)calloc((how_many_elements + 1), sizeof(ITEM*));
     /* Fill items by names */
     int i;
     int all = 0;
     for(i = 0; i < ui->l_menu_names->dirs_count; all++, i++) {
-        ui->l_menu_content[all] = new_item(ui->l_menu_names->dirs[i], "/D");
+        ui->l_menu_content[all] = new_item(ui->l_menu_names->dirs[i], "/D");//BUG?
     }
     for(i = 0; i < ui->l_menu_names->reg_count; all++, i++) {
         ui->l_menu_content[all] = new_item(ui->l_menu_names->reg[i], "rg");
@@ -490,7 +492,7 @@ int user_interface_l_menu_post(user_interface* ui) {
         ui->l_menu_content[all] = new_item(ui->l_menu_names->unk_entr[i], "UE");
     }
     /* Final NULL */
-    ui->l_menu_content[all] = new_item((char*)(NULL), NULL);
+    ui->l_menu_content[all] = new_item("", "");
     /* Create new menu */
     ui->l_menu = new_menu(ui->l_menu_content);
     /* Bind to window */
@@ -498,24 +500,12 @@ int user_interface_l_menu_post(user_interface* ui) {
     /* Create derived window with menu (same memory as parent) */
     int wnd_size_y, wnd_size_x;
     getmaxyx(ui->l_wnd, wnd_size_y, wnd_size_x);
-    fprintf(stderr, "wnd_size: %d %d\n", wnd_size_y, wnd_size_x);
     
     set_menu_sub(ui->l_menu, derwin(ui->l_wnd, wnd_size_y-2, wnd_size_x-2, 1, 1));
     /* set menu format */
     set_menu_format(ui->l_menu, wnd_size_y-2, 1);
     /* post menu */
     int ret = post_menu(ui->l_menu);
-    /*
-    fprintf(stderr, "codes: E_OK %d\n", E_OK);
-    fprintf(stderr, "codes: E_SYSTEM_ERROR %d\n", E_SYSTEM_ERROR);
-    fprintf(stderr, "codes: E_BAD_ARGUMENT %d\n", E_BAD_ARGUMENT);
-    fprintf(stderr, "codes: E_POSTED %d\n", E_POSTED);
-    fprintf(stderr, "codes: E_BAD_STATE %d\n", E_BAD_STATE);
-    fprintf(stderr, "codes: E_NO_ROOM %d\n", E_NO_ROOM);
-    fprintf(stderr, "codes: E_NOT_POSTED %d\n", E_NOT_POSTED);
-    fprintf(stderr, "codes: E_NOT_CONNECTED %d\n", E_NOT_CONNECTED);
-    fprintf(stderr, "post_menu_return: %d\n", ret);
-    */
     /* set cursor position */
     set_current_item(ui->l_menu, ui->l_menu_content[ui->l_menu_cursor_pos]);
     return 0;
@@ -523,15 +513,15 @@ int user_interface_l_menu_post(user_interface* ui) {
 
 int user_interface_l_menu_unpost(user_interface* ui) {
     unpost_menu(ui->l_menu);
-    ui->l_menu_size = 0;
-    int i;
-    for(i = 0; i <= ui->l_menu_size; i++) {
-        free_item(ui->l_menu_content[i]);
-    }
     delwin(menu_sub(ui->l_menu));
     free_menu(ui->l_menu);
     ui->l_menu = NULL;
-    ui->l_menu = NULL;
+    int i;
+    for(i = 0; i < ui->l_menu_size; i++) {
+        free_item(ui->l_menu_content[i]);
+    }
+    ui->l_menu_size = 0;
+    free(ui->l_menu_content);
     return 0;
 }
 

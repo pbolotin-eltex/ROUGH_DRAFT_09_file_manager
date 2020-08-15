@@ -6,18 +6,28 @@ Simple two panel file manager ~ nightmare commander
 
 make
 
-make debug (only if you have debug static versions of ncurses, panel, menu libs)
+make debug (if only you have right place for debug static versions of ncurses, panel, menu libs)
 
 ## usage
 
-now need to use command like this
+after work of make, exec:
 
-./file_manager 2> some_file.txt
+./file_manager
 
-because of ncurses will be corrupted if stderr won't be redirected
+or (if you compile debug version):
+
+./file_manager_g
 
 ## KNOWN BUGS
 
-many memory leaks
+Many "Still reachable" leaks was found by valgrind, but I've read stackoverflow and think that's not so bad:
 
-no correct finalization of ncurses
+:-)
+
+https://stackoverflow.com/questions/3840582/still-reachable-leak-detected-by-valgrind
+
+Most of the leaks are associated with "scandir" system function
+
+It used more many times than it need for learning purposes and it can be replaced in the future.
+
+Also: now it just one panel commander, because of no need to do two panel when the one panel version has errors.

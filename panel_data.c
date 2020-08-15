@@ -13,7 +13,9 @@ int filter_dir_by_d_type(const dirent* ent) {
     switch(ent->d_type) {
         case DT_DIR:
             #ifdef FILTER_DOT_DIR
-            if(0 == strcmp(ent->d_name, ".")) return 0;
+            if(0 == strcmp(ent->d_name, ".")) {
+                return 0;
+            }
             #endif
             return 1;
     }
@@ -255,171 +257,34 @@ int panel_data_init(panel_data* p_d) {
     /* fill all_entr sequentally */
     {
     int a = 0;
-    for(int i = 0; i < p_d->dirs_count; i++, a++) {
+    int i;
+    for(i = 0; i < p_d->dirs_count; i++, a++) {
         p_d->all_entr[a] = p_d->dirs[i];
     }
-    for(int i = 0; i < p_d->reg_count; i++, a++) {
+    for(i = 0; i < p_d->reg_count; i++, a++) {
         p_d->all_entr[a] = p_d->reg[i];
     }
-    for(int i = 0; i < p_d->lnk_count; i++, a++) {
+    for(i = 0; i < p_d->lnk_count; i++, a++) {
         p_d->all_entr[a] = p_d->lnk[i];
     }
-    for(int i = 0; i < p_d->sock_count; i++, a++) {
+    for(i = 0; i < p_d->sock_count; i++, a++) {
         p_d->all_entr[a] = p_d->sock[i];
     }
-    for(int i = 0; i < p_d->fifo_count; i++, a++) {
+    for(i = 0; i < p_d->fifo_count; i++, a++) {
         p_d->all_entr[a] = p_d->fifo[i];
     }
-    for(int i = 0; i < p_d->blk_count; i++, a++) {
+    for(i = 0; i < p_d->blk_count; i++, a++) {
         p_d->all_entr[a] = p_d->blk[i];
     }
-    for(int i = 0; i < p_d->chr_count; i++, a++) {
+    for(i = 0; i < p_d->chr_count; i++, a++) {
         p_d->all_entr[a] = p_d->chr[i];
     }
-    for(int i = 0; i < p_d->unk_dirs_count; i++, a++) {
+    for(i = 0; i < p_d->unk_dirs_count; i++, a++) {
         p_d->all_entr[a] = p_d->unk_dirs[i];
     }
-    for(int i = 0; i < p_d->unk_entr_count; i++, a++) {
+    for(i = 0; i < p_d->unk_entr_count; i++, a++) {
         p_d->all_entr[a] = p_d->unk_entr[i];
     }
-    }
-    
-    /*Test output block*/
-    {
-    fprintf(stderr, "***DIRS***\n");
-    for(int i = 0; i < p_d->dirs_count; i++) {
-        if(p_d->dirs[i] != NULL) {
-            fprintf(stderr, "%s\n", p_d->dirs[i]->d_name);
-        }
-    }
-    fprintf(stderr, "***REG***\n");
-    for(int i = 0; i < p_d->reg_count; i++) {
-        if(p_d->reg[i] != NULL) {
-            fprintf(stderr, "%s\n", p_d->reg[i]->d_name);
-        }
-    }
-    fprintf(stderr, "***LNK***\n");
-    for(int i = 0; i < p_d->lnk_count; i++) {
-        if(p_d->lnk[i] != NULL) {
-            fprintf(stderr, "%s\n", p_d->lnk[i]->d_name);
-        }
-    }
-    fprintf(stderr, "***SOCK***\n");
-    for(int i = 0; i < p_d->sock_count; i++) {
-        if(p_d->sock[i] != NULL) {
-            fprintf(stderr, "%s\n", p_d->sock[i]->d_name);
-        }
-    }
-    fprintf(stderr, "***FIFO***\n");
-    for(int i = 0; i < p_d->fifo_count; i++) {
-        if(p_d->fifo[i] != NULL) {
-            fprintf(stderr, "%s\n", p_d->fifo[i]->d_name);
-        }
-    }
-    fprintf(stderr, "***BLK***\n");
-    for(int i = 0; i < p_d->blk_count; i++) {
-        if(p_d->blk[i] != NULL) {
-            fprintf(stderr, "%s\n", p_d->blk[i]->d_name);
-        }
-    }
-    fprintf(stderr, "***CHR***\n");
-    for(int i = 0; i < p_d->chr_count; i++) {
-        if(p_d->chr[i] != NULL) {
-            fprintf(stderr, "%s\n", p_d->chr[i]->d_name);
-        }
-    }
-    fprintf(stderr, "***UNK_DIRS***\n");
-    for(int i = 0; i < p_d->unk_dirs_count; i++) {
-        if(p_d->unk_dirs[i] != NULL) {
-            fprintf(stderr, "%s\n", p_d->unk_dirs[i]->d_name);
-        }
-    }
-    fprintf(stderr, "***UNK_ENTR***\n");
-    for(int i = 0; i < p_d->unk_entr_count; i++) {
-        if(p_d->unk_entr[i] != NULL) {
-            fprintf(stderr, "%s\n", p_d->unk_entr[i]->d_name);
-        }
-    }
-    }
-    
-    /*Test output block*/
-    {
-    fprintf(stderr, "***DIRS***\n");
-    for(int i = 0; i < p_d->dirs_count; i++) {
-        if(p_d->dirs[i] != NULL) {
-            fprintf(stderr, "%s\n", p_d->dirs[i]->d_name);
-        }
-    }
-    fprintf(stderr, "***REG***\n");
-    for(int i = 0; i < p_d->reg_count; i++) {
-        if(p_d->reg[i] != NULL) {
-            fprintf(stderr, "%s\n", p_d->reg[i]->d_name);
-        }
-    }
-    fprintf(stderr, "***LNK***\n");
-    for(int i = 0; i < p_d->lnk_count; i++) {
-        if(p_d->lnk[i] != NULL) {
-            fprintf(stderr, "%s\n", p_d->lnk[i]->d_name);
-        }
-    }
-    fprintf(stderr, "***SOCK***\n");
-    for(int i = 0; i < p_d->sock_count; i++) {
-        if(p_d->sock[i] != NULL) {
-            fprintf(stderr, "%s\n", p_d->sock[i]->d_name);
-        }
-    }
-    fprintf(stderr, "***FIFO***\n");
-    for(int i = 0; i < p_d->fifo_count; i++) {
-        if(p_d->fifo[i] != NULL) {
-            fprintf(stderr, "%s\n", p_d->fifo[i]->d_name);
-        }
-    }
-    fprintf(stderr, "***BLK***\n");
-    for(int i = 0; i < p_d->blk_count; i++) {
-        if(p_d->blk[i] != NULL) {
-            fprintf(stderr, "%s\n", p_d->blk[i]->d_name);
-        }
-    }
-    fprintf(stderr, "***CHR***\n");
-    for(int i = 0; i < p_d->chr_count; i++) {
-        if(p_d->chr[i] != NULL) {
-            fprintf(stderr, "%s\n", p_d->chr[i]->d_name);
-        }
-    }
-    fprintf(stderr, "***UNK_DIRS***\n");
-    for(int i = 0; i < p_d->unk_dirs_count; i++) {
-        if(p_d->unk_dirs[i] != NULL) {
-            fprintf(stderr, "%s\n", p_d->unk_dirs[i]->d_name);
-        }
-    }
-    fprintf(stderr, "***UNK_ENTR***\n");
-    for(int i = 0; i < p_d->unk_entr_count; i++) {
-        if(p_d->unk_entr[i] != NULL) {
-            fprintf(stderr, "%s\n", p_d->unk_entr[i]->d_name);
-        }
-    }
-    }
-    /*struct entries output*/
-    {
-    fprintf(stderr, "cwd:\t%s\n", p_d->cwd);
-    fprintf(stderr, "dirs:\t%p\n", p_d->dirs);
-    fprintf(stderr, "reg:\t%p\n", p_d->reg);
-    fprintf(stderr, "lnk:\t%p\n", p_d->lnk);
-    fprintf(stderr, "sock:\t%p\n", p_d->sock);
-    fprintf(stderr, "fifo:\t%p\n", p_d->fifo);
-    fprintf(stderr, "blk:\t%p\n", p_d->blk);
-    fprintf(stderr, "chr:\t%p\n", p_d->chr);
-    fprintf(stderr, "unk_dirs:\t%p\n", p_d->unk_dirs);
-    fprintf(stderr, "unk_entr:\t%p\n", p_d->unk_entr);
-    fprintf(stderr, "dirs_count:\t%d\n", p_d->dirs_count);
-    fprintf(stderr, "reg_count:\t%d\n", p_d->reg_count);
-    fprintf(stderr, "lnk_count:\t%d\n", p_d->lnk_count);
-    fprintf(stderr, "sock_count:\t%d\n", p_d->sock_count);
-    fprintf(stderr, "fifo_count:\t%d\n", p_d->fifo_count);
-    fprintf(stderr, "blk_count:\t%d\n", p_d->blk_count);
-    fprintf(stderr, "chr_count:\t%d\n", p_d->chr_count);
-    fprintf(stderr, "unk_dirs_count:\t%d\n", p_d->unk_dirs_count);
-    fprintf(stderr, "unk_entr_count:\t%d\n", p_d->unk_entr_count);
     }
     return 0;
 }
@@ -449,6 +314,7 @@ int panel_data_try_change_dir_to_entry_by_pos(panel_data* p_d, int pos) {
         perror("panel_data_try_change_dir calloc\n");
         exit(EXIT_FAILURE);
     }
+    /* manually form new path to directory */
     int rel;
     int abs = 0;
     int cwd_len = strlen(p_d->cwd);
@@ -462,45 +328,39 @@ int panel_data_try_change_dir_to_entry_by_pos(panel_data* p_d, int pos) {
         new_path[abs] = entry_name[rel];
     }
     new_path[abs] = '\0';
-    fprintf(stderr, "old_path: %s\n new_path %s\n", p_d->cwd, new_path);
     
     int ret = chdir(new_path);
     if(-1 == ret) {
-        perror("chdir in panel_data_check fail");
         int my_errno = errno;
+        free(new_path);
         switch(my_errno) {
         case EACCES:/*Search permission is denied for one of the components of path.*/
             return EACCES;
-            break;
         case EFAULT:/*path points outside your accessible address space.*/
+            perror("chdir in panel_data_check fail\n");
             exit(EXIT_FAILURE);
-            break;
         case EIO:/*An I/O error occurred.*/
             return EIO;
-            break;
         case ELOOP:/*Too many symbolic links were encountered in resolving path.*/
             return ELOOP;
-            break;
         case ENAMETOOLONG:/*path is too long.*/
             return ENAMETOOLONG;
-            break;
         case ENOENT:/*ENOENT The directory specified in path does not exist.*/
             return ENOENT;
-            break;
         case ENOMEM:/*ENOMEM Insufficient kernel memory was available.*/
+            perror("chdir in panel_data_check fail\n");
             exit(EXIT_FAILURE);
-            break;
         case ENOTDIR:/*A component of path is not a directory*/
             return(ENOTDIR);
-            break;
         }
     }
-    /* chdir success! do new panel_data */
-    panel_data *new_p_d = (panel_data*)calloc(1, sizeof(panel_data));
-    if(NULL == new_p_d) {
-        perror("calloc in panel_data_try_to_change for new_p_d\n");
-        exit(EXIT_FAILURE);
-    }
+    /* chdir success! */
+    /* Now new_path can be freed */
+    free(new_path);
+    /* do new panel_data (temporary) */
+    panel_data  temp_p_d;
+    panel_data* new_p_d = &temp_p_d;
+    memset(new_p_d, 0, sizeof(panel_data));
     /* Set new_p_d */
     panel_data_init(new_p_d);
     /* Final old p_d */
