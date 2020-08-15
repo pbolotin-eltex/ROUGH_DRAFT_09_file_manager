@@ -9,6 +9,7 @@
 #include <menu.h>
 #include <malloc.h>
 #include <stdlib.h>
+#include <string.h>
 
 typedef struct dir_menu_names {
     char **dirs;
@@ -29,11 +30,13 @@ typedef struct dir_menu_names {
     unsigned int unk_dirs_count;
     char **unk_entr;
     unsigned int unk_entr_count;
-    
     char *cwd;
+    char **format;
     int need_to_free_strings_flag;
     int need_to_free_arrays_flag;
     int need_to_free_cwd_flag;
+    int format_size;
+    int need_to_free_format_flag;
 } dir_menu_names;
 
 typedef struct user_interface {
@@ -108,8 +111,4 @@ int user_interface_active_menu_cursor_to_first_pos(user_interface* ui);
 
 int user_interface_active_menu_get_cursor_position(user_interface* ui);
 
-/*Menu experiment*/
-/*
-int user_interface_menu(user_interface* ui);
-*/
 #endif
