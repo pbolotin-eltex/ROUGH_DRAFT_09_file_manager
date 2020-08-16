@@ -113,8 +113,11 @@ int user_interface_off(user_interface* ui);
 int user_interface_on_off_switcher(user_interface* ui);
 
 int user_interface_l_menu_prepare_replace(user_interface* ui);
+int user_interface_r_menu_prepare_replace(user_interface* ui);
 int user_interface_l_menu_post(user_interface* ui);
+int user_interface_r_menu_post(user_interface* ui);
 int user_interface_l_menu_unpost(user_interface* ui);
+int user_interface_r_menu_unpost(user_interface* ui);
 
 int user_interface_active_menu_cursor_down(user_interface* ui);
 int user_interface_active_menu_cursor_up(user_interface* ui);

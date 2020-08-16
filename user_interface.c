@@ -259,6 +259,9 @@ int user_interface_change_screen_size(user_interface* ui) {
     /* Renew menues */
     user_interface_l_menu_unpost(ui);
     user_interface_l_menu_post(ui);
+    
+    user_interface_r_menu_unpost(ui);
+    user_interface_r_menu_post(ui);
     return 0;
 }
 
@@ -345,6 +348,7 @@ int user_interface_string_to_cmd(user_interface* ui, char *str) {
 
 int user_interface_final(user_interface* ui) {
     user_interface_l_menu_prepare_replace(ui);
+    user_interface_r_menu_prepare_replace(ui);
     
     /* Free memory for structs */
     free(ui->l_menu_names);
@@ -366,6 +370,7 @@ int user_interface_final(user_interface* ui) {
 int user_interface_stop(user_interface* ui) {
     /* unpost menues */
     user_interface_l_menu_unpost(ui);
+    user_interface_r_menu_unpost(ui);
     
     /* del panels */
     del_panel(ui->r_panel);
@@ -391,6 +396,7 @@ int user_interface_on_off_switcher(user_interface* ui) {
 int user_interface_on(user_interface* ui) {
     user_interface_reinit(ui);
     user_interface_l_menu_post(ui);
+    user_interface_r_menu_post(ui);
     ui->on_off_flag = 1;
     return 0;
 }
@@ -475,6 +481,41 @@ int user_interface_l_menu_prepare_replace(user_interface* ui) {
     return 0;
 }
 
+int user_interface_r_menu_prepare_replace(user_interface* ui) {
+    ui->r_menu_cursor_pos = 0;
+    
+    /* Free menu infrastructures */
+    user_interface_r_menu_unpost(ui);
+    
+    /* Free memory of strdup's allocations */
+    int i;
+    if(ui->r_menu_names->need_to_free_strings_flag) {
+        for(i = 0; i < ui->r_menu_names->all_entr_count; i++) {
+            free(ui->r_menu_names->all_entr[i]);
+        }
+        ui->r_menu_names->need_to_free_strings_flag = 0;
+    }
+    /* Free memory of malloc's allocations */
+    if(ui->r_menu_names->need_to_free_all_entr_flag) {
+        free(ui->r_menu_names->all_entr);
+        ui->r_menu_names->need_to_free_all_entr_flag = 0;
+    }
+    /* Free memory of malloc's allocations for descriptions */
+    if(ui->r_menu_names->need_to_free_all_entr_descr_flag) {
+        free(ui->r_menu_names->all_entr_descr);
+        ui->r_menu_names->all_entr_descr = NULL;
+        ui->r_menu_names->need_to_free_all_entr_descr_flag = 0;
+    }
+    /* Free memory of cwd by strdup's allocation */
+    if(ui->r_menu_names->need_to_free_cwd_flag) {
+        free(ui->r_menu_names->cwd);
+        ui->r_menu_names->cwd = NULL;
+        ui->r_menu_names->need_to_free_cwd_flag = 0;
+    }
+    
+    return 0;
+}
+
 int user_interface_l_menu_post(user_interface* ui) {
     /* Get size of window where will be placed menu */
     int wnd_size_y, wnd_size_x;
@@ -529,6 +570,60 @@ int user_interface_l_menu_post(user_interface* ui) {
     return 0;
 }
 
+int user_interface_r_menu_post(user_interface* ui) {
+    /* Get size of window where will be placed menu */
+    int wnd_size_y, wnd_size_x;
+    getmaxyx(ui->r_wnd, wnd_size_y, wnd_size_x);
+    
+    int how_many_elements = ui->r_menu_names->all_entr_count;
+    ui->r_menu_size = how_many_elements;
+    /* Place for (ITEM*) array */
+    ui->r_menu_content = (ITEM**)calloc((how_many_elements + 1), sizeof(ITEM*));
+    
+    /* Place for formatted filenames (near panel width) */
+    ui->r_menu_names->format = (char**)calloc(how_many_elements, sizeof(char*));
+    if(NULL == ui->r_menu_names->format) {
+        perror("can't calloc for formatted_filenames");
+        exit(EXIT_FAILURE);
+    }
+    int i;
+    for(i = 0; i < how_many_elements; i++) {
+        ui->r_menu_names->format[i] = (char*)calloc(1, sizeof(char)*(wnd_size_x));
+        if(NULL == ui->r_menu_names->format[i]) {
+            perror("can't calloc for formatted_filenames[]");
+            exit(EXIT_FAILURE);
+        }
+    }
+    ui->r_menu_names->need_to_free_format_flag = 1;
+    ui->r_menu_names->format_size = how_many_elements;
+    
+    /* Format filenames and fill menu items by them */
+    int format_len = wnd_size_x - 6;
+    for(i = 0; i < ui->r_menu_names->all_entr_count; i++) {
+        user_interface_format_filename_to_max_length_in_menu(ui,\
+                                             ui->r_menu_names->all_entr[i],\
+                                             ui->r_menu_names->format[i],\
+                                             format_len);
+        ui->r_menu_content[i] = new_item(ui->r_menu_names->format[i],\
+             description_by_code[ui->r_menu_names->all_entr_descr[i]]);
+    }
+    /* Final NULL */
+    ui->r_menu_content[i] = new_item("", "");
+    /* Create new menu */
+    ui->r_menu = new_menu(ui->r_menu_content);
+    /* Bind to window */
+    set_menu_win(ui->r_menu, ui->r_wnd);
+    /* Create derived window with menu (same memory as parent) */
+    set_menu_sub(ui->r_menu, derwin(ui->r_wnd, wnd_size_y-2, wnd_size_x-2, 1, 1));
+    /* set menu format */
+    set_menu_format(ui->r_menu, wnd_size_y-2, 1);
+    /* post menu */
+    int ret = post_menu(ui->r_menu);
+    /* set cursor position */
+    set_current_item(ui->r_menu, ui->r_menu_content[ui->r_menu_cursor_pos]);
+    return 0;
+}
+
 int user_interface_l_menu_unpost(user_interface* ui) {
     unpost_menu(ui->l_menu);
     delwin(menu_sub(ui->l_menu));
@@ -547,6 +642,27 @@ int user_interface_l_menu_unpost(user_interface* ui) {
     }
     free(ui->l_menu_names->format);
     ui->l_menu_names->format_size = 0;
+    return 0;
+}
+
+int user_interface_r_menu_unpost(user_interface* ui) {
+    unpost_menu(ui->r_menu);
+    delwin(menu_sub(ui->r_menu));
+    free_menu(ui->r_menu);
+    ui->r_menu = NULL;
+    int i;
+    for(i = 0; i < ui->r_menu_size; i++) {
+        free_item(ui->r_menu_content[i]);
+    }
+    ui->r_menu_size = 0;
+    free(ui->r_menu_content);
+    
+    /* Free memory of formated names for menu */
+    for(i = 0; i < ui->r_menu_names->format_size; i++) {
+        free(ui->r_menu_names->format[i]);
+    }
+    free(ui->r_menu_names->format);
+    ui->r_menu_names->format_size = 0;
     return 0;
 }
 

@@ -22,9 +22,10 @@ int file_manager_init(file_manager_data* data) {
     /* To init menues using panel_data */
     converter_panel_data_to_dir_menu_names(&data->l_panel_data,\
                                            (&data->ui)->l_menu_names);
-    /*converter_panel_data_to_dir_menu_names(&data->r_panel_data,\
-                                           (&data->ui)->r_menu_names);*/
+    converter_panel_data_to_dir_menu_names(&data->r_panel_data,\
+                                           (&data->ui)->r_menu_names);
     user_interface_l_menu_post(&data->ui);
+    user_interface_r_menu_post(&data->ui);
     return 0;
 }
 
@@ -66,7 +67,7 @@ int file_manager_work(file_manager_data* data) {
                 if(user_interface_is_left_panel_active(&data->ui)) {
                     int pos;
                     pos = user_interface_active_menu_get_cursor_position(&data->ui);
-                    if(panel_data_check_if_entry_by_pos_is_dir(&data->l_panel_data, pos)) {
+                    if(panel_data_check_if_entry_by_pos_is_dir(&data ->l_panel_data, pos)) {
                         int ret = panel_data_try_change_dir_to_entry_by_pos(&data->l_panel_data, pos);
                         if(ret != 0) {
                             switch(ret) {
@@ -100,6 +101,45 @@ int file_manager_work(file_manager_data* data) {
                             converter_panel_data_to_dir_menu_names(&data->l_panel_data,\
                                                                   (&data->ui)->l_menu_names);
                             user_interface_l_menu_post(&data->ui);
+                        }
+                    }
+                } else if(user_interface_is_right_panel_active(&data->ui)) {
+                    int pos;
+                    pos = user_interface_active_menu_get_cursor_position(&data->ui);
+                    if(panel_data_check_if_entry_by_pos_is_dir(&data->r_panel_data, pos)) {
+                        int ret = panel_data_try_change_dir_to_entry_by_pos(&data->r_panel_data, pos);
+                        if(ret != 0) {
+                            switch(ret) {
+                            case EACCES:/*Search permission is denied for one of the components of path.*/
+                                user_interface_need_show_message(&data->ui, "Permission denied");
+                                break;
+                            case EIO:/*An I/O error occurred.*/
+                                user_interface_need_show_message(&data->ui, "I/O error");
+                                break;
+                            case ELOOP:/*Too many symbolic links were encountered in resolving path.*/
+                                user_interface_need_show_message(&data->ui, "Too many symbolic links were encountered in resolving path");
+                                break;
+                            case ENAMETOOLONG:/*path is too long.*/
+                                user_interface_need_show_message(&data->ui, "Path is too long");
+                                break;
+                            case ENOENT:/*The directory specified in path does not exist.*/
+                                user_interface_need_show_message(&data->ui, "The directory specified in path does not exist");
+                                break;
+                            case ENOMEM:/*Insufficient kernel memory was available*/
+                                user_interface_need_show_message(&data->ui, "Insufficient kernel memory was available");
+                                break;
+                            case ENOTDIR:/*A component of path is not a directory*/
+                                user_interface_need_show_message(&data->ui, "A component of path is not a directory");
+                                break;
+                            default:
+                                user_interface_need_show_message(&data->ui, "Unknown error");
+                                break;
+                            }
+                        } else {/* change dir was successful */
+                            user_interface_r_menu_prepare_replace(&data->ui);
+                            converter_panel_data_to_dir_menu_names(&data->r_panel_data,\
+                                                                  (&data->ui)->r_menu_names);
+                            user_interface_r_menu_post(&data->ui);
                         }
                     }
                 }
