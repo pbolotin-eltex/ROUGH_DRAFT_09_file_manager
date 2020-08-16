@@ -1,79 +1,17 @@
+/**********************************************************************
+ * Panel_data module, implementation
+ * this module need to work with data from filesystem
+ **********************************************************************/
 #include "panel_data.h"
 
-/*
-case DT_REG:
-case DT_LNK:
-case DT_SOCK:
-case DT_FIFO:
-case DT_BLK:
-case DT_CHR:
-case DT_UNKNOWN:
-*/
-int filter_dir_by_d_type(const dirent* ent) {
-    switch(ent->d_type) {
-        case DT_DIR:
-            #ifdef FILTER_DOT_DIR
-            if(0 == strcmp(ent->d_name, ".")) {
-                return 0;
-            }
-            #endif
-            return 1;
-    }
-    return 0;
-}
-
-int filter_reg_by_d_type(const dirent* ent) {
-    switch(ent->d_type) {
-        case DT_REG:
-            return 1;
-    }
-    return 0;
-}
-
-int filter_lnk_by_d_type(const dirent* ent) {
-    switch(ent->d_type) {
-        case DT_LNK:
-            return 1;
-    }
-    return 0;
-}
-
-int filter_sock_by_d_type(const dirent* ent) {
-    switch(ent->d_type) {
-        case DT_SOCK:
-            return 1;
-    }
-    return 0;
-}
-
-int filter_fifo_by_d_type(const dirent* ent) {
-    switch(ent->d_type) {
-        case DT_FIFO:
-            return 1;
-    }
-    return 0;
-}
-
-int filter_blk_by_d_type(const dirent* ent) {
-    switch(ent->d_type) {
-        case DT_FIFO:
-            return 1;
-    }
-    return 0;
-}
-
-int filter_chr_by_d_type(const dirent* ent) {
-    switch(ent->d_type) {
-        case DT_CHR:
-            return 1;
-    }
-    return 0;
-}
-
-int filter_unk_dirs_by_opendir(const dirent* ent) {
+int dot_dir_filter(const dirent* ent) {
     #ifdef FILTER_DOT_DIR
     if(0 == strcmp(ent->d_name, ".")) return 0;
     #endif
+    return 1;
+}
+
+int filter_unk_dirs_by_opendir(const dirent* ent) {
     DIR* is_dir;
     switch(ent->d_type) {
         case DT_UNKNOWN:
@@ -121,187 +59,147 @@ int filter_unk_dirs_by_opendir(const dirent* ent) {
     return 0;
 }
 
-int filter_unk_entr_by_opendir(const dirent* ent) {
-    DIR* is_dir;
-    switch(ent->d_type) {
+int category_alphasort(const dirent** a, const dirent** b) {
+    /* Define first parameter */
+    int d_type = (*a)->d_type;
+    int a_prior = 0;
+    switch(d_type) {
+        case DT_DIR:
+            a_prior = 1;
+            if(0 == strcmp((*a)->d_name, "..")) {
+                a_prior = 0;
+            }
+            break;
+        case DT_REG:
+            a_prior = 2;
+            break;
+        case DT_LNK:
+            a_prior = 3;
+            break;
+        case DT_SOCK:
+            a_prior = 4;
+            break;
+        case DT_FIFO:
+            a_prior = 5;
+            break;
+        case DT_BLK:
+            a_prior = 6;
+            break;
+        case DT_CHR:
+            a_prior = 7;
+            break;            
         case DT_UNKNOWN:
-        /* Try to check dir for opening */
-        is_dir = opendir(ent->d_name);
-        if(NULL != is_dir) {
-            int success = closedir(is_dir);
-            if(!success) {
-                perror("Error when try to closedir()\n");
-                exit(EXIT_FAILURE);
+            if(filter_unk_dirs_by_opendir(*a)) {
+                a_prior = 8;
+                if(0 == strcmp((*a)->d_name, "..")) {
+                    a_prior = 0;
+                }
+            } else {
+                a_prior = 9;
             }
-            return 0;
-        } else {
-            switch(errno) {
-                case ENOTDIR: /* name is not a directory. */
-                    return 1;
-                break;
-                case EACCES:
-                    return 0;
-                break;
-                case EBADF:  /*fd is not a valid file descriptor opened for reading.*/
-                    return 0;
-                break;
-                case EMFILE: /*The per-process limit on the number of open file descriptors has been reached.*/
-                    perror("Error in filter by_opendir,  limit open fd\n");
-                    exit(EXIT_FAILURE);
-                    return 0;
-                break;
-                case ENFILE: /*The system-wide limit on the total number of open files has been reached.*/
-                    perror("Error in filter by_opendir, limit open files\n");
-                    exit(EXIT_FAILURE);
-                    return 0;
-                break;
-                case ENOENT: /*Directory does not exist, or name is an empty string.*/
-                    return 0;
-                break;
-                case ENOMEM: /*Insufficient memory to complete the operation.*/
-                    perror("Error in filter by_opendir\n");
-                    exit(EXIT_FAILURE);
-                    return 0;
-                break;
-            }
-        }
+            break;
     }
-    return 0;
+    /* Define second parameter */
+    d_type = (*b)->d_type;
+    int b_prior = 0;
+    switch(d_type) {
+        case DT_DIR:
+            b_prior = 1;
+            if(0 == strcmp((*b)->d_name, "..")) {
+                b_prior = 0;
+            }
+            break;
+        case DT_REG:
+            b_prior = 2;
+            break;
+        case DT_LNK:
+            b_prior = 3;
+            break;
+        case DT_SOCK:
+            b_prior = 4;
+            break;
+        case DT_FIFO:
+            b_prior = 5;
+            break;
+        case DT_BLK:
+            b_prior = 6;
+            break;
+        case DT_CHR:
+            b_prior = 7;
+            break;            
+        case DT_UNKNOWN:
+            if(filter_unk_dirs_by_opendir(*b)) {
+                b_prior = 8;
+                if(0 == strcmp((*b)->d_name, "..")) {
+                    b_prior = 0;
+                }
+            } else {
+                b_prior = 9;
+            }
+            break;
+    }
+    if(a_prior != b_prior) return a_prior - b_prior;
+    return alphasort(a, b);
 }
 
 int panel_data_init(panel_data* p_d) {
-    /* get cwd (after using it need to free)*/
     p_d->cwd = getcwd(NULL, 0);
-    if(NULL == p_d->cwd) {
-        perror("Can't getcwd()\n");
+
+    dirent** scan;
+    int ret = scandir(p_d->cwd, &p_d->all_entr, dot_dir_filter, category_alphasort);
+    if(0 > ret) {
+        perror("panel_data_init scandir\n");
         exit(EXIT_FAILURE);
     }
-    /* scandir for directories */
-    int ret = scandir(p_d->cwd, &p_d->dirs, filter_dir_by_d_type, alphasort);
-    if(-1 == ret) {
-        perror("Can't scandir for directories \n");
-        exit(EXIT_FAILURE);
-    }
-    p_d->dirs_count = ret;
-    /* scandir for reg files*/
-    ret = scandir(p_d->cwd, &p_d->reg, filter_reg_by_d_type, alphasort);
-    if(-1 == ret) {
-        perror("Can't scandir for regfiles \n");
-        exit(EXIT_FAILURE);
-    }
-    p_d->reg_count = ret;
-    /* scandir for lnk files*/
-    ret = scandir(p_d->cwd, &p_d->lnk, filter_lnk_by_d_type, alphasort);
-    if(-1 == ret) {
-        perror("Can't scandir for lnk \n");
-        exit(EXIT_FAILURE);
-    }
-    p_d->lnk_count = ret;
-    /* scandir for socket */
-    ret = scandir(p_d->cwd, &p_d->sock, filter_sock_by_d_type, alphasort);
-    if(-1 == ret) {
-        perror("Can't scandir for sockets \n");
-        exit(EXIT_FAILURE);
-    }
-    p_d->sock_count = ret;
-    /* scandir for fifo */
-    ret = scandir(p_d->cwd, &p_d->fifo, filter_fifo_by_d_type, alphasort);
-    if(-1 == ret) {
-        perror("Can't scandir for fifo \n");
-        exit(EXIT_FAILURE);
-    }
-    p_d->fifo_count = ret;
-    /* scandir for blk */
-    ret = scandir(p_d->cwd, &p_d->blk, filter_blk_by_d_type, alphasort);
-    if(-1 == ret) {
-        perror("Can't scandir for blk \n");
-        exit(EXIT_FAILURE);
-    }
-    p_d->blk_count = ret;
-    /* scandir for chr */
-    ret = scandir(p_d->cwd, &p_d->chr, filter_chr_by_d_type, alphasort);
-    if(-1 == ret) {
-        perror("Can't scandir for chr \n");
-        exit(EXIT_FAILURE);
-    }
-    p_d->chr_count = ret;
-    /* scandir for unk_dirs */
-    ret = scandir(p_d->cwd, &p_d->unk_dirs, filter_unk_dirs_by_opendir, alphasort);
-    if(-1 == ret) {
-        perror("Can't scandir for unk_dirs \n");
-        exit(EXIT_FAILURE);
-    }
-    p_d->unk_dirs_count = ret;
-    /* scandir for unk_entr */
-    ret = scandir(p_d->cwd, &p_d->unk_entr, filter_unk_entr_by_opendir, alphasort);
-    if(-1 == ret) {
-        perror("Can't scandir for unk_entr \n");
-        exit(EXIT_FAILURE);
-    }
-    p_d->unk_entr_count = ret;
+    p_d->all_entr_count = ret;
     
-    p_d->all_entr_count = p_d->dirs_count +\
-                          p_d->reg_count +\
-                          p_d->lnk_count +\
-                          p_d->sock_count +\
-                          p_d->fifo_count +\
-                          p_d->blk_count +\
-                          p_d->chr_count +\
-                          p_d->unk_dirs_count +\
-                          p_d->unk_entr_count;
-    p_d->all_entr = (dirent**)calloc(p_d->all_entr_count, sizeof(dirent*));
-    if(NULL == p_d->all_entr) {
-        perror("calloc in panel_data_init\n");
+    /* Define array of the description codes */
+    p_d->description_code = calloc(p_d->all_entr_count, sizeof(int));
+    if(NULL == p_d->description_code) {
+        perror("panel_data_init calloc\n");
         exit(EXIT_FAILURE);
     }
-    /* fill all_entr sequentally */
-    {
-    int a = 0;
     int i;
-    for(i = 0; i < p_d->dirs_count; i++, a++) {
-        p_d->all_entr[a] = p_d->dirs[i];
-    }
-    for(i = 0; i < p_d->reg_count; i++, a++) {
-        p_d->all_entr[a] = p_d->reg[i];
-    }
-    for(i = 0; i < p_d->lnk_count; i++, a++) {
-        p_d->all_entr[a] = p_d->lnk[i];
-    }
-    for(i = 0; i < p_d->sock_count; i++, a++) {
-        p_d->all_entr[a] = p_d->sock[i];
-    }
-    for(i = 0; i < p_d->fifo_count; i++, a++) {
-        p_d->all_entr[a] = p_d->fifo[i];
-    }
-    for(i = 0; i < p_d->blk_count; i++, a++) {
-        p_d->all_entr[a] = p_d->blk[i];
-    }
-    for(i = 0; i < p_d->chr_count; i++, a++) {
-        p_d->all_entr[a] = p_d->chr[i];
-    }
-    for(i = 0; i < p_d->unk_dirs_count; i++, a++) {
-        p_d->all_entr[a] = p_d->unk_dirs[i];
-    }
-    for(i = 0; i < p_d->unk_entr_count; i++, a++) {
-        p_d->all_entr[a] = p_d->unk_entr[i];
-    }
+    for(i = 0; i < p_d->all_entr_count; i++) {
+        switch(p_d->all_entr[i]->d_type) {
+            case DT_DIR:
+                p_d->description_code[i] = 1;
+                break;
+            case DT_REG:
+                p_d->description_code[i] = 2;
+                break;
+            case DT_LNK:
+                p_d->description_code[i] = 3;
+                break;
+            case DT_SOCK:
+                p_d->description_code[i] = 4;
+                break;
+            case DT_FIFO:
+                p_d->description_code[i] = 5;
+                break;
+            case DT_BLK:
+                p_d->description_code[i] = 6;
+                break;
+            case DT_CHR:
+                p_d->description_code[i] = 7;
+                break;            
+            case DT_UNKNOWN:
+                if(filter_unk_dirs_by_opendir(p_d->all_entr[i])) {
+                    p_d->description_code[i] = 8;
+                } else {
+                    p_d->description_code[i] = 9;
+                }
+                break;
+        }
     }
     return 0;
 }
 
 int panel_data_check_if_entry_by_pos_is_dir(panel_data* p_d, int pos) {
-    if(pos >= 0 && pos < p_d->dirs_count) {
+    if(1 == p_d->description_code[pos]) {
         return 1;
     }
-    int l_lim = p_d->dirs_count +\
-                p_d->reg_count +\
-                p_d->lnk_count +\
-                p_d->sock_count +\
-                p_d->fifo_count +\
-                p_d->blk_count +\
-                p_d->chr_count +\
-                p_d->chr_count;
-    if(pos >= l_lim && pos < l_lim + p_d->unk_dirs_count) {
+    if(8 == p_d->description_code[pos]) {
         return 1;
     }
     return 0;
@@ -328,7 +226,7 @@ int panel_data_try_change_dir_to_entry_by_pos(panel_data* p_d, int pos) {
         new_path[abs] = entry_name[rel];
     }
     new_path[abs] = '\0';
-    
+    /* Try chdir to the formed new_path */
     int ret = chdir(new_path);
     if(-1 == ret) {
         int my_errno = errno;
@@ -355,7 +253,7 @@ int panel_data_try_change_dir_to_entry_by_pos(panel_data* p_d, int pos) {
         }
     }
     /* chdir success! */
-    /* Now new_path can be freed */
+    /* Now new_path can be freed because of getcwd now can get it back */
     free(new_path);
     /* do new panel_data (temporary) */
     panel_data  temp_p_d;
@@ -367,99 +265,26 @@ int panel_data_try_change_dir_to_entry_by_pos(panel_data* p_d, int pos) {
     panel_data_final(p_d);
     /* reenter fields of static p_d by new_p_d fields */
     p_d->cwd = new_p_d->cwd;
-    p_d->dirs = new_p_d->dirs;
-    p_d->reg = new_p_d->reg;
-    p_d->lnk = new_p_d->lnk;
-    p_d->sock = new_p_d->sock;
-    p_d->fifo = new_p_d->fifo;
-    p_d->blk = new_p_d->blk;
-    p_d->chr = new_p_d->chr;
-    p_d->unk_dirs = new_p_d->unk_dirs;
-    p_d->unk_entr = new_p_d->unk_entr;
-    p_d->dirs_count = new_p_d->dirs_count;
-    p_d->reg_count = new_p_d->reg_count;
-    p_d->lnk_count = new_p_d->lnk_count;
-    p_d->sock_count = new_p_d->sock_count;
-    p_d->fifo_count = new_p_d->fifo_count;
-    p_d->blk_count = new_p_d->blk_count;
-    p_d->chr_count = new_p_d->chr_count;
-    p_d->unk_dirs_count = new_p_d->unk_dirs_count;
-    p_d->unk_entr_count = new_p_d->unk_entr_count;
     p_d->all_entr = new_p_d->all_entr;
+    p_d->description_code = new_p_d->description_code;
     p_d->all_entr_count = new_p_d->all_entr_count;
     return 0;
 }
 
-/* There is trouble with memory freeing! */
-/* I think because of scandir and maybe ~readdir under it */
-/* Also maybe because of the filter functions */
-/* MB there is a way to correct it. Using of readdir instead of scandir */
-/* And read directory's content manually */
 int panel_data_final(panel_data* p_d) {
     free(p_d->cwd);
-    if(NULL != p_d->dirs) {
-        for(int i = 0; i < p_d->dirs_count; i++) {
-            //free(p_d->dirs[i]->d_name);
-            free(p_d->dirs[i]);
+    p_d->cwd = NULL;
+    int i;
+    if(NULL != p_d->all_entr) {
+        for(int i = 0; i < p_d->all_entr_count; i++) {
+            //free(p_d->all_entr[i]->d_name);
+            free(p_d->all_entr[i]);
         }
-        free(p_d->dirs);
+        free(p_d->all_entr);
     }
-    if(NULL != p_d->reg) {
-        for(int i = 0; i < p_d->reg_count; i++) {
-            //free(p_d->reg[i]->d_name);
-            free(p_d->reg[i]);
-        }
-        free(p_d->reg);
-    }
-    if(NULL != p_d->lnk) {
-        for(int i = 0; i < p_d->lnk_count; i++) {
-            //free(p_d->lnk[i]->d_name);
-            free(p_d->lnk[i]);
-        }
-        free(p_d->lnk);
-    }
-    if(NULL != p_d->sock) {
-        for(int i = 0; i < p_d->sock_count; i++) {
-            //free(p_d->sock[i]->d_name);
-            free(p_d->sock[i]);
-        }
-        free(p_d->sock);
-    }
-    if(NULL != p_d->fifo) {
-        for(int i = 0; i < p_d->fifo_count; i++) {
-            //free(p_d->fifo[i]->d_name);
-            free(p_d->fifo[i]);
-        }
-        free(p_d->fifo);
-    }
-    if(NULL != p_d->blk) {
-        for(int i = 0; i < p_d->blk_count; i++) {
-            //free(p_d->blk[i]->d_name);
-            free(p_d->blk[i]);
-        }
-        free(p_d->blk);
-    }
-    if(NULL != p_d->chr) {
-        for(int i = 0; i < p_d->chr_count; i++) {
-            //free(p_d->chr[i]->d_name);
-            free(p_d->chr[i]);
-        }
-        free(p_d->chr);
-    }
-    if(NULL != p_d->unk_dirs) {
-        for(int i = 0; i < p_d->unk_dirs_count; i++) {
-            //free(p_d->unk_dirs[i]->d_name);
-            free(p_d->unk_dirs[i]);
-        }
-        free(p_d->unk_dirs);
-    }
-    if(NULL != p_d->unk_entr) {
-        for(int i = 0; i < p_d->unk_entr_count; i++) {
-            //free(p_d->unk_entr[i]->d_name);
-            free(p_d->unk_entr[i]);
-        }
-        free(p_d->unk_entr);
-    }
-    free(p_d->all_entr);
+    p_d->all_entr = NULL;
+    p_d->all_entr_count = 0;
+    free(p_d->description_code);
+    p_d->description_code = NULL;
     return 0;
 }

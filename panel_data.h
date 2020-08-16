@@ -1,3 +1,8 @@
+/**********************************************************************
+ * Panel_data module, header
+ * this module need to work with data from filesystem
+ **********************************************************************/
+
 #ifndef _FILE_MANAGER_PANELS_H_
 #define _FILE_MANAGER_PANELS_H_
 
@@ -16,25 +21,8 @@ typedef struct dirent dirent;
 
 typedef struct panel_data {
     char* cwd;
-    dirent** dirs;
-    dirent** reg;
-    dirent** lnk;
-    dirent** sock;
-    dirent** fifo;
-    dirent** blk;
-    dirent** chr;
-    dirent** unk_dirs;
-    dirent** unk_entr;
-    unsigned int dirs_count;
-    unsigned int reg_count;
-    unsigned int lnk_count;
-    unsigned int sock_count;
-    unsigned int fifo_count;
-    unsigned int blk_count;
-    unsigned int chr_count;
-    unsigned int unk_dirs_count;
-    unsigned int unk_entr_count;
     dirent** all_entr;
+    int* description_code;
     unsigned int all_entr_count;
 } panel_data;
 

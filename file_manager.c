@@ -1,5 +1,6 @@
 /**********************************************************************
- * File manager common part, implementation
+ * File manager module, implementation
+ * Common part of program, the other modules are used in here
  *********************************************************************/
 #include "file_manager.h"
 
@@ -19,9 +20,9 @@ int file_manager_init(file_manager_data* data) {
         exit(EXIT_FAILURE);
     }
     /* To init menues using panel_data */
-    converter_panel_data_to_dir_menu_items(&data->l_panel_data,\
+    converter_panel_data_to_dir_menu_names(&data->l_panel_data,\
                                            (&data->ui)->l_menu_names);
-    /*converter_panel_data_to_dir_menu_items(&data->r_panel_data,\
+    /*converter_panel_data_to_dir_menu_names(&data->r_panel_data,\
                                            (&data->ui)->r_menu_names);*/
     user_interface_l_menu_post(&data->ui);
     return 0;
@@ -96,7 +97,7 @@ int file_manager_work(file_manager_data* data) {
                             }
                         } else {/* change dir was successful */
                             user_interface_l_menu_prepare_replace(&data->ui);
-                            converter_panel_data_to_dir_menu_items(&data->l_panel_data,\
+                            converter_panel_data_to_dir_menu_names(&data->l_panel_data,\
                                                                   (&data->ui)->l_menu_names);
                             user_interface_l_menu_post(&data->ui);
                         }

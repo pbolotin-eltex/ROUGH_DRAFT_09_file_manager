@@ -11,7 +11,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-typedef struct dir_menu_names {
+typedef struct dir_menu_names_old {
     char **dirs;
     unsigned int dirs_count;
     char **reg;
@@ -36,6 +36,20 @@ typedef struct dir_menu_names {
     int need_to_free_arrays_flag;
     int need_to_free_cwd_flag;
     int format_size;
+    int need_to_free_format_flag;
+} dir_menu_names_old;
+
+typedef struct dir_menu_names {
+    char **all_entr;
+    int *all_entr_descr;
+    unsigned int all_entr_count;
+    char *cwd;
+    char **format;
+    unsigned int format_size;
+    int need_to_free_strings_flag;
+    int need_to_free_all_entr_flag;
+    int need_to_free_all_entr_descr_flag;
+    int need_to_free_cwd_flag;
     int need_to_free_format_flag;
 } dir_menu_names;
 

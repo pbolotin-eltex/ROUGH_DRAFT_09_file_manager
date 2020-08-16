@@ -5,6 +5,20 @@
 
 #define DEBUG
 
+char* description_by_code[] =\
+{
+    "??",//0
+    "/ ",//1
+    "rg",//2
+    "lk",//3
+    "sk",//4
+    "fi",//5
+    "bl",//6
+    "ch",//7
+    "/U",//8
+    "Uf"//9
+};
+
 int user_interface_init(user_interface* ui) {
     /* Init main window */
     ui->main_wnd = initscr();
@@ -170,7 +184,7 @@ int user_interface_reinit(user_interface* ui) {
     
     /* Here difference with user_interface_init */
     /* memory won't be allocated for menu names */
-    /* Will used that exist */
+    /* Will used that is exist for now */
     /*
     ui->l_menu_names = (dir_menu_names*)calloc(1, sizeof(dir_menu_names));
     ui->r_menu_names = (dir_menu_names*)calloc(1, sizeof(dir_menu_names));
@@ -435,48 +449,21 @@ int user_interface_l_menu_prepare_replace(user_interface* ui) {
     /* Free memory of strdup's allocations */
     int i;
     if(ui->l_menu_names->need_to_free_strings_flag) {
-        int all = 0;
-        for(i = 0; i < ui->l_menu_names->dirs_count; all++, i++) {
-            free(ui->l_menu_names->dirs[i]);
-        }
-        for(i = 0; i < ui->l_menu_names->reg_count; all++, i++) {
-            free(ui->l_menu_names->reg[i]);
-        }
-        for(i = 0; i < ui->l_menu_names->lnk_count; all++, i++) {
-            free(ui->l_menu_names->lnk[i]);
-        }
-        for(i = 0; i < ui->l_menu_names->sock_count; all++, i++) {
-            free(ui->l_menu_names->sock[i]);
-        }
-        for(i = 0; i < ui->l_menu_names->fifo_count; all++, i++) {
-            free(ui->l_menu_names->fifo[i]);
-        }
-        for(i = 0; i < ui->l_menu_names->blk_count; all++, i++) {
-            free(ui->l_menu_names->blk[i]);
-        }
-        for(i = 0; i < ui->l_menu_names->chr_count; all++, i++) {
-            free(ui->l_menu_names->chr[i]);
-        }
-        for(i = 0; i < ui->l_menu_names->unk_dirs_count; all++, i++) {
-            free(ui->l_menu_names->unk_dirs[i]);
-        }
-        for(i = 0; i < ui->l_menu_names->unk_entr_count; all++, i++) {
-            free(ui->l_menu_names->unk_entr[i]);
+        for(i = 0; i < ui->l_menu_names->all_entr_count; i++) {
+            free(ui->l_menu_names->all_entr[i]);
         }
         ui->l_menu_names->need_to_free_strings_flag = 0;
     }
     /* Free memory of malloc's allocations */
-    if(ui->l_menu_names->need_to_free_arrays_flag) {
-        free(ui->l_menu_names->dirs);
-        free(ui->l_menu_names->reg);
-        free(ui->l_menu_names->lnk);
-        free(ui->l_menu_names->sock);
-        free(ui->l_menu_names->fifo);
-        free(ui->l_menu_names->blk);
-        free(ui->l_menu_names->chr);
-        free(ui->l_menu_names->unk_dirs);
-        free(ui->l_menu_names->unk_entr);
-        ui->l_menu_names->need_to_free_arrays_flag = 0;
+    if(ui->l_menu_names->need_to_free_all_entr_flag) {
+        free(ui->l_menu_names->all_entr);
+        ui->l_menu_names->need_to_free_all_entr_flag = 0;
+    }
+    /* Free memory of malloc's allocations for descriptions */
+    if(ui->l_menu_names->need_to_free_all_entr_descr_flag) {
+        free(ui->l_menu_names->all_entr_descr);
+        ui->l_menu_names->all_entr_descr = NULL;
+        ui->l_menu_names->need_to_free_all_entr_descr_flag = 0;
     }
     /* Free memory of cwd by strdup's allocation */
     if(ui->l_menu_names->need_to_free_cwd_flag) {
@@ -484,6 +471,7 @@ int user_interface_l_menu_prepare_replace(user_interface* ui) {
         ui->l_menu_names->cwd = NULL;
         ui->l_menu_names->need_to_free_cwd_flag = 0;
     }
+    
     return 0;
 }
 
@@ -492,15 +480,7 @@ int user_interface_l_menu_post(user_interface* ui) {
     int wnd_size_y, wnd_size_x;
     getmaxyx(ui->l_wnd, wnd_size_y, wnd_size_x);
     
-    int how_many_elements = ui->l_menu_names->dirs_count+\
-                            ui->l_menu_names->reg_count+\
-                            ui->l_menu_names->lnk_count+\
-                            ui->l_menu_names->sock_count+\
-                            ui->l_menu_names->fifo_count+\
-                            ui->l_menu_names->blk_count+\
-                            ui->l_menu_names->chr_count+\
-                            ui->l_menu_names->unk_dirs_count+\
-                            ui->l_menu_names->unk_entr_count;
+    int how_many_elements = ui->l_menu_names->all_entr_count;
     ui->l_menu_size = how_many_elements;
     /* Place for (ITEM*) array */
     ui->l_menu_content = (ITEM**)calloc((how_many_elements + 1), sizeof(ITEM*));
@@ -524,72 +504,16 @@ int user_interface_l_menu_post(user_interface* ui) {
     
     /* Format filenames and fill menu items by them */
     int format_len = wnd_size_x - 6;
-    int all = 0;
-    for(i = 0; i < ui->l_menu_names->dirs_count; all++, i++) {
+    for(i = 0; i < ui->l_menu_names->all_entr_count; i++) {
         user_interface_format_filename_to_max_length_in_menu(ui,\
-                                             ui->l_menu_names->dirs[i],\
-                                             ui->l_menu_names->format[all],\
+                                             ui->l_menu_names->all_entr[i],\
+                                             ui->l_menu_names->format[i],\
                                              format_len);
-        ui->l_menu_content[all] = new_item(ui->l_menu_names->format[all], "/D");
-    }
-    for(i = 0; i < ui->l_menu_names->reg_count; all++, i++) {
-        user_interface_format_filename_to_max_length_in_menu(ui,\
-                                             ui->l_menu_names->reg[i],\
-                                             ui->l_menu_names->format[all],\
-                                             format_len);
-        ui->l_menu_content[all] = new_item(ui->l_menu_names->format[all], "rg");
-    }
-    for(i = 0; i < ui->l_menu_names->lnk_count; all++, i++) {
-        user_interface_format_filename_to_max_length_in_menu(ui,\
-                                             ui->l_menu_names->lnk[i],\
-                                             ui->l_menu_names->format[all],\
-                                             format_len);
-        ui->l_menu_content[all] = new_item(ui->l_menu_names->format[all], "lk");
-    }
-    for(i = 0; i < ui->l_menu_names->sock_count; all++, i++) {
-        user_interface_format_filename_to_max_length_in_menu(ui,\
-                                             ui->l_menu_names->sock[i],\
-                                             ui->l_menu_names->format[all],\
-                                             format_len);
-        ui->l_menu_content[all] = new_item(ui->l_menu_names->format[all], "sk");
-    }
-    for(i = 0; i < ui->l_menu_names->fifo_count; all++, i++) {
-        user_interface_format_filename_to_max_length_in_menu(ui,\
-                                             ui->l_menu_names->fifo[i],\
-                                             ui->l_menu_names->format[all],\
-                                             format_len);
-        ui->l_menu_content[all] = new_item(ui->l_menu_names->format[all], "io");
-    }
-    for(i = 0; i < ui->l_menu_names->blk_count; all++, i++) {
-        user_interface_format_filename_to_max_length_in_menu(ui,\
-                                             ui->l_menu_names->blk[i],\
-                                             ui->l_menu_names->format[all],\
-                                             format_len);
-        ui->l_menu_content[all] = new_item(ui->l_menu_names->format[all], "bl");
-    }
-    for(i = 0; i < ui->l_menu_names->chr_count; all++, i++) {
-        user_interface_format_filename_to_max_length_in_menu(ui,\
-                                             ui->l_menu_names->chr[i],\
-                                             ui->l_menu_names->format[all],\
-                                             format_len);
-        ui->l_menu_content[all] = new_item(ui->l_menu_names->format[all], "ch");
-    }
-    for(i = 0; i < ui->l_menu_names->unk_dirs_count; all++, i++) {
-        user_interface_format_filename_to_max_length_in_menu(ui,\
-                                             ui->l_menu_names->unk_dirs[i],\
-                                             ui->l_menu_names->format[all],\
-                                             format_len);
-        ui->l_menu_content[all] = new_item(ui->l_menu_names->format[all], "UD");
-    }
-    for(i = 0; i < ui->l_menu_names->unk_entr_count; all++, i++) {
-        user_interface_format_filename_to_max_length_in_menu(ui,\
-                                             ui->l_menu_names->unk_entr[i],\
-                                             ui->l_menu_names->format[all],\
-                                             format_len);
-        ui->l_menu_content[all] = new_item(ui->l_menu_names->format[all], "UE");
+        ui->l_menu_content[i] = new_item(ui->l_menu_names->format[i],\
+             description_by_code[ui->l_menu_names->all_entr_descr[i]]);
     }
     /* Final NULL */
-    ui->l_menu_content[all] = new_item("", "");
+    ui->l_menu_content[i] = new_item("", "");
     /* Create new menu */
     ui->l_menu = new_menu(ui->l_menu_content);
     /* Bind to window */

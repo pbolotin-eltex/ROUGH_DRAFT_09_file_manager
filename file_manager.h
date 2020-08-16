@@ -1,5 +1,6 @@
 /**********************************************************************
- * File manager common part, app data is joined here
+ * File manager module, header file
+ * Common part of program, the other modules are used in here
  *********************************************************************/
 #ifndef _FILE_MANAGER_H_
 #define _FILE_MANAGER_H_
